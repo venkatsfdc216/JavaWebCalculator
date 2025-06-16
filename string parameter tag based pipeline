@@ -1,0 +1,61 @@
+pipeline{
+    agent any
+
+        parameters{
+          string(name: 'IMAGE_VERSION',  defaultValue: 'latest', description: 'Version/tag for the image')
+                  }
+        stages{
+        
+        stage ('checkout scm') {
+            steps {
+                git 'https://github.com/venkatsfdc216/JavaWebCalculator.git'
+            }
+        }
+        stage ('maven package') {
+            steps {
+                sh 'mvn package'
+            }
+        }     
+
+
+       stage ('Build and push to docker hub'){
+            steps{
+                script{
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+
+			
+
+			def fullImage = "venkat1009/imgdocker:${params.IMAGE_VERSION}"
+                        withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                        sh "docker build -t imgdocker:${params.IMAGE_VERSION} ."
+                        sh "docker tag imgdocker:${params.IMAGE_VERSION} ${fullImage}"
+                        sh "docker push ${fullImage}"
+                    }
+
+
+                   }
+                }
+            }
+        }
+                stage ('Deploy to container'){
+            steps{
+                script {
+                    def fullImage = "venkat1009/imgdocker:${params.IMAGE_VERSION}"
+                    // Clean up any existing container
+                    sh "docker rm -f JavaWebCalculator || true"
+                    
+
+                    // Run the container
+                    sh """
+                        docker run -d \\
+                        --name mycon \\
+                        -p 8082:8080 \\
+                        ${fullImage}
+                    """
+                }
+                
+                //sh 'docker run --name mywebcalc -d -p 9090:8080  imgdocker:${params.IMAGE_VERSION}'
+            }
+        }
+        }
+}
