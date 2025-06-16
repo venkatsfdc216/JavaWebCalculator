@@ -4,7 +4,7 @@ pipeline{
         
         stage ('checkout scm') {
             steps {
-                git 'https://github.com/anji103/JavaWebCalculator.git'
+                git 'https://github.com/venkatsfdc216/JavaWebCalculator.git'
             }
         }
         stage ('maven package') {
@@ -19,8 +19,8 @@ pipeline{
                 script{
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                         sh "docker build -t  myimg ."
-                        sh "docker tag myimg anji103/myimg:latest"
-                        sh "docker push anji103/myimg:latest"
+                        sh "docker tag myimg venkat1009/myimg:latest"
+                        sh "docker push venkat1009/myimg:latest"
                    }
                 }
             }
